@@ -3,9 +3,9 @@
 set -eu
 
 # Lowercase job status
-JOB_STATUS=$(echo "$1" | tr '[:upper:]' '[:lower:]')
+JOB_STATUS=$(echo "${JOB_STATUS}" | tr '[:upper:]' '[:lower:]')
 SLACK_BOT_TOKEN=${SLACK_BOT_TOKEN}
-CHANNEL=$2
+CHANNEL=${CHANNEL]
 
 AUTHOR=${GITHUB_ACTOR}
 REPOSITORY=$GITHUB_REPOSITORY
