@@ -10,6 +10,4 @@ LABEL "homepage"="http://github.com/TheRealReal/heroku-review-envs"
 LABEL "maintainer"="The RealReal DevOps <devops@therealreal.com>"
 
 ADD entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh 
-
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["sh", "/entrypoint.sh"]
