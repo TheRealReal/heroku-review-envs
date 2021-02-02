@@ -12,6 +12,7 @@ AUTHOR=${GITHUB_ACTOR}
 REPOSITORY=$GITHUB_REPOSITORY
 RUN_ID=$GITHUB_RUN_ID
 HEROKU_APP_NAME=${APP_ORIGIN}-pr-${PR_NUMBER}
+NOW=$(date +%s)
 
 slackMsg() {
     title=$1
@@ -27,22 +28,20 @@ slackMsg() {
 }
 
 DatadogMsg() {
-    EVENT_TITLE="Deploying $HEROKU_APP_NAME failed"
-    EVENT_TEXT="Github Action= https://github.com/$REPOSITORY/actions/runs/$RUN_ID"
-    TAGS="['app:${HEROKU_APP_NAME}','env:review-env']"
+    EVENT_URL="https://github.com/$REPOSITORY/actions/runs/$RUN_ID"
     curl  -X POST -H "Content-type: application/json" \
-    -d '{
-      "title": "'"${EVENT_TITLE}"'",
-      "text": "'"${EVENT_TEXT}"'",
-      "priority": "normal",
-      "tags": "'"${TAGS}"'",
-      "alert_type": "'"${EVENT_ALERT_TYPE}"'",
-      "source_type_name": "GITHUB"
+    -d '{ "series":
+        [{"metric":"github_workflow.error.count",
+          "points":[["'"$NOW"'", 1]],
+          "type":"count",
+          "host":"'"$PR_URL"'",
+          "tags":["env:review-env", "'"app_origin:${APP_ORIGIN}"'", "'"github_action_id:${EVENT_URL}"'", "'"app:${HEROKU_APP_NAME}"'"]}
+        ]
     }' \
-    "https://api.datadoghq.com/api/v1/events?api_key=${DATADOG_API_KEY}"
+    "https://api.datadoghq.com/api/v1/series?api_key=${DATADOG_API_KEY}"
 }
 
 if [ "$JOB_STATUS" = 'failure' ]; then
     slackMsg "FAILURE" "#FF0000"
-    DatadogMsg 
+    DatadogMsg
 fi
